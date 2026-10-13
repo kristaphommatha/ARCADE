@@ -58,17 +58,13 @@ public class MatrixArray {
             }
         }
 
-        //
-        // No need to sort, since we built them in order.
-        //
-
         values = new Value[nNonZero];
         int i = 0;
         for (Value v : alValues) {
             values[i] = v;
             i++;
         }
-    } // ctor
+    }
 
     /**
      * Constructs a sparse matrix from a collection of matrix entries.

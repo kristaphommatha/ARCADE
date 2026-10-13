@@ -424,7 +424,7 @@ public class Solver {
      * @param a the lower bound on the interval
      * @param b the upper bound on the interval
      * @param maxIters the maximum number of iterations
-     * @param tolerance the error
+     * @param tolerance the tolerance for error
      * @return the root of the function
      */
     public static double bisection(
