@@ -5,6 +5,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.logging.Logger;
 import sim.engine.Schedule;
 import sim.engine.SimState;
 import sim.util.Bag;
@@ -26,6 +27,7 @@ import arcade.patch.env.component.PatchComponentSitesGraphFactory.EdgeLevel;
 import arcade.patch.env.component.PatchComponentSitesGraphFactory.EdgeType;
 import arcade.patch.env.component.PatchComponentSitesGraphFactory.Root;
 import arcade.patch.env.location.CoordinateXYZ;
+import arcade.patch.util.PatchEnums.Ordering;
 import static arcade.patch.env.component.PatchComponentSitesGraphUtilities.CAPILLARY_RADIUS;
 import static arcade.patch.env.component.PatchComponentSitesGraphUtilities.MAXIMUM_CAPILLARY_RADIUS;
 import static arcade.patch.env.component.PatchComponentSitesGraphUtilities.MINIMUM_CAPILLARY_RADIUS;
@@ -55,6 +57,7 @@ import static arcade.patch.util.PatchEnums.Ordering;
  * the flow rate of the new edge from the original edge.
  */
 public class PatchComponentGrowth implements Component {
+    private static final Logger LOGGER = Logger.getLogger(PatchComponentGrowth.class.getName());
 
     /** Default edge level to add to the graph from this component. */
     private static final EdgeLevel DEFAULT_EDGE_LEVEL = EdgeLevel.LEVEL_2;
@@ -281,6 +284,24 @@ public class PatchComponentGrowth implements Component {
             if (averageDirectionalMap(vegfMap) > vegfThreshold) {
                 Bag in = graph.getEdgesIn(node);
                 Bag out = graph.getEdgesOut(node);
+                if (out.isEmpty()) {
+                    LOGGER.info("NODE OUT IS EMPTY: " + node);
+                    LOGGER.info("=========== NODE STATS ===========");
+                    LOGGER.info("isRoot: " + node.isRoot);
+                    LOGGER.info("pressure: " + node.pressure);
+                    LOGGER.info("lastUpdate: " + node.lastUpdate);
+                    LOGGER.info("in: " + in);
+                    for (Object inObj : in) {
+                        SiteEdge inEdge = (SiteEdge) inObj;
+                        SiteNode from = inEdge.getFrom();
+                        LOGGER.info("================ " + inEdge + " STATS (\"================");
+                        LOGGER.info("type: " + inEdge.getType());
+                        LOGGER.info("isIgnored: " + inEdge.isIgnored);
+                        LOGGER.info("from: " + from);
+                        LOGGER.info("from isRoot: " + from.isRoot);
+                        LOGGER.info("from pressure: " + from.pressure);
+                    }
+                }
                 SiteEdge inEdge = (SiteEdge) in.get(0);
                 vegfMap.remove(sites.graphFactory.getOppositeDirection(inEdge, DEFAULT_EDGE_LEVEL));
 
