@@ -1,5 +1,6 @@
 package arcade.patch.env.component;
 
+import java.util.logging.Logger;
 import sim.engine.Schedule;
 import sim.engine.SimState;
 import sim.util.Bag;
@@ -8,7 +9,10 @@ import arcade.core.sim.Series;
 import arcade.core.sim.Simulation;
 import arcade.core.util.Graph;
 import arcade.core.util.MiniBox;
+import arcade.patch.env.component.PatchComponentSitesGraph.SiteEdge;
+import arcade.patch.env.component.PatchComponentSitesGraph.SiteNode;
 import arcade.patch.env.location.CoordinateXYZ;
+import arcade.patch.util.PatchEnums.Ordering;
 import static arcade.patch.env.component.PatchComponentSitesGraph.SiteEdge;
 import static arcade.patch.env.component.PatchComponentSitesGraphUtilities.MAXIMUM_WALL_RADIUS_FRACTION;
 import static arcade.patch.env.component.PatchComponentSitesGraphUtilities.MINIMUM_CAPILLARY_RADIUS;
@@ -30,6 +34,8 @@ import static arcade.patch.util.PatchEnums.Ordering;
  * All hemodynamic properties are recalculated at the end of the step.
  */
 public class PatchComponentRemodel implements Component {
+    private static final Logger LOGGER = Logger.getLogger(PatchComponentGrowth.class.getName());
+
     /** Interval between remodeling steps [min]. */
     private final int remodelingInterval;
 
@@ -167,6 +173,13 @@ public class PatchComponentRemodel implements Component {
             if (edge.radius < MINIMUM_CAPILLARY_RADIUS
                     || edge.wall < MINIMUM_WALL_THICKNESS
                     || Double.isNaN(edge.radius)) {
+                SiteNode testNode = new SiteNode(182, 78, 0);
+                if (edge.getFrom().equals(testNode)) {
+                    LOGGER.info(
+                            "========== REMOVING EDGE " + edge + " due to remodelling ==========");
+                    LOGGER.info("From: " + edge.getFrom());
+                    LOGGER.info("To: " + edge.getTo());
+                }
                 graph.removeEdge(edge);
                 edge.getFrom().pressure = Double.NaN;
                 edge.getTo().pressure = Double.NaN;
