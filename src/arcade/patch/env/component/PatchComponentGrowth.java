@@ -284,7 +284,7 @@ public class PatchComponentGrowth implements Component {
             if (averageDirectionalMap(vegfMap) > vegfThreshold) {
                 Bag in = graph.getEdgesIn(node);
                 Bag out = graph.getEdgesOut(node);
-                if (out.isEmpty()) {
+                if (out == null) {
                     LOGGER.info("NODE OUT IS EMPTY: " + node);
                     LOGGER.info("=========== NODE STATS ===========");
                     LOGGER.info("isRoot: " + node.isRoot);
