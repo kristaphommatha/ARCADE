@@ -4,12 +4,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.logging.Logger;
 import sim.util.Bag;
 import ec.util.MersenneTwisterFast;
 import arcade.core.util.Graph;
+import arcade.core.util.Graph.Edge;
 import arcade.core.util.Graph.Strategy;
 import arcade.core.util.Matrix;
 import arcade.core.util.Solver;
+import arcade.patch.env.component.PatchComponentSitesGraph.SiteEdge;
+import arcade.patch.env.component.PatchComponentSitesGraph.SiteNode;
+import arcade.patch.env.component.PatchComponentSitesGraphFactory.EdgeCategory;
+import arcade.patch.env.component.PatchComponentSitesGraphFactory.EdgeLevel;
+import arcade.patch.env.component.PatchComponentSitesGraphFactory.EdgeType;
+import arcade.patch.env.component.PatchComponentSitesGraphFactory.Root;
 import static arcade.core.util.Graph.Edge;
 import static arcade.patch.env.component.PatchComponentSitesGraph.SiteEdge;
 import static arcade.patch.env.component.PatchComponentSitesGraph.SiteNode;
@@ -20,6 +28,9 @@ import static arcade.patch.env.component.PatchComponentSitesGraphFactory.Root;
 
 /** Container for utility functions used by {@link PatchComponentSitesGraph}. */
 abstract class PatchComponentSitesGraphUtilities {
+    private static final Logger LOGGER =
+            Logger.getLogger(PatchComponentSitesGraphUtilities.class.getName());
+
     /** Calculation types. */
     enum CalculationType {
         /** Code for upstream radius calculation for all edge types. */
@@ -1273,7 +1284,11 @@ abstract class PatchComponentSitesGraphUtilities {
             }
 
             // Update leaves to be ignored.
+            SiteNode testNode = new SiteNode(182, 78, 0);
             for (SiteEdge edge : list) {
+                if (edge.getTo().equals(testNode) || edge.getFrom().equals(testNode)) {
+                    LOGGER.info(edge + " IS A LEAF. IGNORING....");
+                }
                 edge.isIgnored = true;
             }
             for (SiteNode node : outLeaves) {

@@ -34,7 +34,7 @@ import static arcade.patch.util.PatchEnums.Ordering;
  * All hemodynamic properties are recalculated at the end of the step.
  */
 public class PatchComponentRemodel implements Component {
-    private static final Logger LOGGER = Logger.getLogger(PatchComponentGrowth.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PatchComponentRemodel.class.getName());
 
     /** Interval between remodeling steps [min]. */
     private final int remodelingInterval;

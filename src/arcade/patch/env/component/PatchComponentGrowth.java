@@ -492,7 +492,11 @@ public class PatchComponentGrowth implements Component {
                 keyNodesToRemove.add(sprout);
             } else {
                 edgeList.add(newEdge);
+                SiteNode testNode = new SiteNode(182, 78, 0);
                 if (newEdge.isAnastomotic) {
+                    if (newEdge.getTo().equals(testNode) || newEdge.getFrom().equals(testNode)) {
+                        LOGGER.info("EDGE " + newEdge + " IS ANASTOMOTIC");
+                    }
                     sprout.anastomosis = true;
                     addFlag = true;
                 }
@@ -615,6 +619,12 @@ public class PatchComponentGrowth implements Component {
     private void addTemporaryEdges() {
         for (Map.Entry<SiteNode, ArrayList<SiteEdge>> entry : angiogenicNodeMap.entrySet()) {
             ArrayList<SiteEdge> edgeList = entry.getValue();
+            SiteNode testNode = new SiteNode(182, 78, 0);
+            for (SiteEdge edge : edgeList) {
+                if (edge.getTo().equals(testNode) || edge.getFrom().equals(testNode)) {
+                    LOGGER.info("ADDING TEMP EDGE " + edge);
+                }
+            }
             tempEdges.addAll(edgeList);
             addEdgeList(edgeList);
         }
@@ -624,6 +634,12 @@ public class PatchComponentGrowth implements Component {
     private void removeTemporaryEdges() {
         if (tempEdges.isEmpty()) {
             return;
+        }
+        SiteNode testNode = new SiteNode(182, 78, 0);
+        for (SiteEdge edge : tempEdges) {
+            if (edge.getFrom().equals(testNode) || edge.getTo().equals(testNode)) {
+                LOGGER.info("REMOVING TEMP EDGE " + edge);
+            }
         }
         removeEdgeList(tempEdges);
         tempEdges.clear();
@@ -635,7 +651,13 @@ public class PatchComponentGrowth implements Component {
      * @param edgeList {@link SiteEdge}s to remove
      */
     private void removeEdgeList(ArrayList<SiteEdge> edgeList) {
+        SiteNode testNode = new SiteNode(182, 78, 0);
         for (SiteEdge edge : edgeList) {
+            if (edge.getFrom().equals(testNode)) {
+                LOGGER.info("========== REMOVING EDGE " + edge + "  ==========");
+                LOGGER.info("From: " + edge.getFrom());
+                LOGGER.info("To: " + edge.getTo());
+            }
             graph.removeEdge(edge);
         }
     }
@@ -824,6 +846,7 @@ public class PatchComponentGrowth implements Component {
     private void addAngiogenicEdges(
             ArrayList<SiteEdge> list, SiteNode start, SiteNode end, Calculation calc) {
 
+        SiteNode testNode = new SiteNode(182, 78, 0);
         path(graph, end, start);
         if (end.prev != null) {
             return;
@@ -848,6 +871,9 @@ public class PatchComponentGrowth implements Component {
         for (SiteEdge edge : angioPath) {
             if (graph.contains(edge)) {
                 return;
+            }
+            if (edge.getFrom().equals(testNode) || edge.getTo().equals(testNode)) {
+                LOGGER.info("ATTEMPTING TO ADD ANGIO EDGE " + edge + " TO GRAPH");
             }
             edge.getTo().addTime = tick;
             edge.radius =
@@ -880,7 +906,19 @@ public class PatchComponentGrowth implements Component {
                                         (SiteEdge) outEdges.get(0), (SiteEdge) angioPath.get(0));
                 Outcome result = recalculateRadii(angioPath, start, end, intersection);
                 if (result == Outcome.FAILURE) {
-                    removeEdgeList(angioPath);
+                    for (SiteEdge edge : angioPath) {
+                        if (edge.getFrom().equals(testNode) || edge.getTo().equals(testNode)) {
+                            LOGGER.info(
+                                    testNode
+                                            + " COULD NOT BE ADDED DUE TO RADII CALCULATION FAILURE");
+                        }
+                        removeEdgeList(angioPath);
+                    }
+                }
+                for (SiteEdge edge : angioPath) {
+                    if (edge.getFrom().equals(testNode) || edge.getTo().equals(testNode)) {
+                        LOGGER.info(testNode + " SUCCESSFULLY ADDED TO GRAPH");
+                    }
                 }
                 break;
         }
