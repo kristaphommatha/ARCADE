@@ -655,8 +655,6 @@ public class PatchComponentGrowth implements Component {
         for (SiteEdge edge : edgeList) {
             if (edge.getFrom().equals(testNode)) {
                 LOGGER.info("========== REMOVING EDGE " + edge + "  ==========");
-                LOGGER.info("From: " + edge.getFrom());
-                LOGGER.info("To: " + edge.getTo());
             }
             graph.removeEdge(edge);
         }
@@ -906,6 +904,7 @@ public class PatchComponentGrowth implements Component {
                                         (SiteEdge) outEdges.get(0), (SiteEdge) angioPath.get(0));
                 Outcome result = recalculateRadii(angioPath, start, end, intersection);
                 if (result == Outcome.FAILURE) {
+                    removeEdgeList(angioPath);
                     for (SiteEdge edge : angioPath) {
                         if (edge.getFrom().equals(testNode) || edge.getTo().equals(testNode)) {
                             LOGGER.info(
