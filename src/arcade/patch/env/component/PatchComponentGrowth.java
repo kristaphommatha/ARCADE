@@ -904,15 +904,14 @@ public class PatchComponentGrowth implements Component {
                                         (SiteEdge) outEdges.get(0), (SiteEdge) angioPath.get(0));
                 Outcome result = recalculateRadii(angioPath, start, end, intersection);
                 if (result == Outcome.FAILURE) {
-                    removeEdgeList(angioPath);
                     for (SiteEdge edge : angioPath) {
                         if (edge.getFrom().equals(testNode) || edge.getTo().equals(testNode)) {
                             LOGGER.info(
                                     testNode
                                             + " COULD NOT BE ADDED DUE TO RADII CALCULATION FAILURE");
                         }
-                        removeEdgeList(angioPath);
                     }
+                    removeEdgeList(angioPath);
                 }
                 for (SiteEdge edge : angioPath) {
                     if (edge.getFrom().equals(testNode) || edge.getTo().equals(testNode)) {
