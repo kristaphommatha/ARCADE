@@ -269,6 +269,9 @@ public class PatchComponentGrowth implements Component {
 
     @Override
     public void step(SimState simstate) {
+        SiteNode testNode1 = new SiteNode(182, 78, 0);
+        SiteNode testNode2 = new SiteNode(180, 80, 0);
+
         tick = (int) simstate.schedule.getTime();
         MersenneTwisterFast random = simstate.random;
 
@@ -313,6 +316,9 @@ public class PatchComponentGrowth implements Component {
                 }
 
                 angiogenicNodeMap.put(node, new ArrayList<>());
+                if (node.equals(testNode1) || node.equals(testNode2)) {
+                    LOGGER.info(node + " COULD BE A SPROUT. ADDING TO ANGIOGENICNODEMAP...");
+                }
 
                 EnumMap<EdgeDirection, Double> vegfAverages = getDirectionalAverages(vegfMap);
 
@@ -492,9 +498,13 @@ public class PatchComponentGrowth implements Component {
                 keyNodesToRemove.add(sprout);
             } else {
                 edgeList.add(newEdge);
-                SiteNode testNode = new SiteNode(182, 78, 0);
+                SiteNode testNode1 = new SiteNode(182, 78, 0);
+                SiteNode testNode2 = new SiteNode(180, 80, 0);
                 if (newEdge.isAnastomotic) {
-                    if (newEdge.getTo().equals(testNode) || newEdge.getFrom().equals(testNode)) {
+                    if (newEdge.getTo().equals(testNode1)
+                            || newEdge.getFrom().equals(testNode1)
+                            || newEdge.getTo().equals(testNode2)
+                            || newEdge.getFrom().equals(testNode2)) {
                         LOGGER.info("EDGE " + newEdge + " IS ANASTOMOTIC");
                     }
                     sprout.anastomosis = true;
@@ -568,7 +578,12 @@ public class PatchComponentGrowth implements Component {
      * @param node {@link SiteNode} key to reverse edges for
      */
     private void reverseAllEdges(SiteNode node) {
+        SiteNode testNode1 = new SiteNode(182, 78, 0);
+        SiteNode testNode2 = new SiteNode(180, 80, 0);
         for (SiteEdge edge : angiogenicNodeMap.get(node)) {
+            if (edge.getFrom().equals(testNode1) && edge.getTo().equals(testNode2)) {
+                LOGGER.info("REVERSING " + edge + " DUE TO ANGIOGENESIS???");
+            }
             edge.reverse();
         }
     }
@@ -619,9 +634,13 @@ public class PatchComponentGrowth implements Component {
     private void addTemporaryEdges() {
         for (Map.Entry<SiteNode, ArrayList<SiteEdge>> entry : angiogenicNodeMap.entrySet()) {
             ArrayList<SiteEdge> edgeList = entry.getValue();
-            SiteNode testNode = new SiteNode(182, 78, 0);
+            SiteNode testNode1 = new SiteNode(182, 78, 0);
+            SiteNode testNode2 = new SiteNode(180, 80, 0);
             for (SiteEdge edge : edgeList) {
-                if (edge.getTo().equals(testNode) || edge.getFrom().equals(testNode)) {
+                if (edge.getTo().equals(testNode1)
+                        || edge.getFrom().equals(testNode1)
+                        || edge.getTo().equals(testNode2)
+                        || edge.getFrom().equals(testNode2)) {
                     LOGGER.info("ADDING TEMP EDGE " + edge);
                 }
             }

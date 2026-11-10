@@ -288,6 +288,8 @@ abstract class PatchComponentSitesGraphUtilities {
      */
     static boolean reversePressures(Graph graph) {
         boolean reversed = false;
+        SiteNode testNode1 = new SiteNode(182, 78, 0);
+        SiteNode testNode2 = new SiteNode(180, 80, 0);
         for (Object obj : new Bag(graph.getAllEdges())) {
             SiteEdge edge = (SiteEdge) obj;
             if (edge.isIgnored) {
@@ -297,6 +299,9 @@ abstract class PatchComponentSitesGraphUtilities {
             SiteNode to = edge.getTo();
             double delta = from.pressure - to.pressure;
             if (delta < 0) {
+                if (from.equals(testNode1) && to.equals(testNode2)) {
+                    LOGGER.info("REVERSING EDGE " + edge + " DUE TO (-) PRESSURE");
+                }
                 reversed = true;
                 graph.reverseEdge(edge);
             }

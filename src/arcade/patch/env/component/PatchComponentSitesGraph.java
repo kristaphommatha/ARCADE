@@ -3,6 +3,7 @@ package arcade.patch.env.component;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.logging.Logger;
 import sim.util.Bag;
 import ec.util.MersenneTwisterFast;
 import arcade.core.env.location.Location;
@@ -49,6 +50,8 @@ import static arcade.patch.env.component.PatchComponentSitesGraphUtilities.*;
  * {@code A} / {@code a} for an artery or {@code V} / {@code v} for a vein.
  */
 public abstract class PatchComponentSitesGraph extends PatchComponentSites {
+    private static final Logger LOGGER = Logger.getLogger(PatchComponentSitesGraph.class.getName());
+
     /** Tolerance for difference in internal and external concentrations. */
     private static final double DELTA_TOLERANCE = 1E-8;
 
@@ -109,6 +112,22 @@ public abstract class PatchComponentSitesGraph extends PatchComponentSites {
         // Create graph.
         graphFactory = makeGraphFactory(series);
         graph = initializeGraph(random);
+        SiteNode testNode = new SiteNode(182, 78, 0);
+        if (graph.contains(testNode)) {
+            Bag in = graph.getEdgesIn(testNode);
+            Bag out = graph.getEdgesOut(testNode);
+            LOGGER.info("========= INITIAL GRAPH CONTAINS " + testNode + " =========");
+            LOGGER.info("IN EDGES: ");
+            for (Object inObj : in) {
+                SiteEdge inEdge = (SiteEdge) inObj;
+                LOGGER.info(inEdge.toString());
+            }
+            LOGGER.info("OUT EDGES: ");
+            for (Object outObj : out) {
+                SiteEdge outEdge = (SiteEdge) outObj;
+                LOGGER.info(outEdge.toString());
+            }
+        }
     }
 
     /**
