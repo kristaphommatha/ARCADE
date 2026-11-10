@@ -408,7 +408,10 @@ public abstract class PatchComponentSitesGraph extends PatchComponentSites {
      * <p>Node tracks additional hemodynamic properties including pressure and oxygen.
      */
     public static class SiteNode extends Node {
-        /** Node ID. */
+        /**
+         * Node index used to track node in {@link
+         * PatchComponentSitesGraphUtilities#calculatePressures} matrix.
+         */
         int id;
 
         /** {@code true} if the node is a root, {@code false} otherwise. */
@@ -456,8 +459,13 @@ public abstract class PatchComponentSitesGraph extends PatchComponentSites {
         @Override
         public SiteNode duplicate() {
             SiteNode duplicate = new SiteNode(x, y, z);
+            duplicate.id = id;
             duplicate.isRoot = isRoot;
             duplicate.pressure = pressure;
+            duplicate.oxygen = oxygen;
+            duplicate.distance = distance;
+            duplicate.lastUpdate = lastUpdate;
+            duplicate.addTime = addTime;
             return duplicate;
         }
 
@@ -559,7 +567,7 @@ public abstract class PatchComponentSitesGraph extends PatchComponentSites {
          * @param level the graph resolution level
          */
         SiteEdge(SiteNode from, SiteNode to, EdgeType type, EdgeLevel level) {
-            super(from, to, type != EdgeType.ANGIOGENIC);
+            super(from, to);
             this.type = type;
             this.level = level;
             isVisited = false;
