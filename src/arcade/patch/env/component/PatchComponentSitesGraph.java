@@ -586,7 +586,7 @@ public abstract class PatchComponentSitesGraph extends PatchComponentSites {
          * @param level the graph resolution level
          */
         SiteEdge(SiteNode from, SiteNode to, EdgeType type, EdgeLevel level) {
-            super(from, to, type != EdgeType.ANGIOGENIC);
+            super(from, to);
             this.type = type;
             this.level = level;
             isVisited = false;
