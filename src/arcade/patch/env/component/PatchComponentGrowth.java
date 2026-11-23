@@ -26,6 +26,7 @@ import arcade.patch.env.component.PatchComponentSitesGraphFactory.EdgeLevel;
 import arcade.patch.env.component.PatchComponentSitesGraphFactory.EdgeType;
 import arcade.patch.env.component.PatchComponentSitesGraphFactory.Root;
 import arcade.patch.env.location.CoordinateXYZ;
+import arcade.patch.util.PatchEnums.Ordering;
 import static arcade.patch.env.component.PatchComponentSitesGraphUtilities.CAPILLARY_RADIUS;
 import static arcade.patch.env.component.PatchComponentSitesGraphUtilities.MAXIMUM_CAPILLARY_RADIUS;
 import static arcade.patch.env.component.PatchComponentSitesGraphUtilities.MINIMUM_CAPILLARY_RADIUS;
@@ -115,6 +116,9 @@ public class PatchComponentGrowth implements Component {
     /** Lattice containing vegf concentration. */
     private Lattice vegfLattice;
 
+    // * Maximum life of angiogenic sprout */
+    private double sproutLife;
+
     /** Direction of migration. */
     private MigrationDirection walkType;
 
@@ -182,6 +186,7 @@ public class PatchComponentGrowth implements Component {
         walkType = MigrationDirection.valueOf(parameters.get("WALK_TYPE"));
         maxLength = parameters.getDouble("MAX_LENGTH");
         calculationStrategy = Calculation.valueOf(parameters.get("CALCULATION_STRATEGY"));
+        sproutLife = migrationRate * 5;
     }
 
     @Override
@@ -274,32 +279,13 @@ public class PatchComponentGrowth implements Component {
             if (checkNodeSkipStatus(node)) {
                 continue;
             }
-
-            EnumMap<EdgeDirection, ArrayList<Double>> vegfMap =
-                    buildDirectionalSpanMap(vegfLattice, node);
-
-            if (averageDirectionalMap(vegfMap) > vegfThreshold) {
-                Bag in = graph.getEdgesIn(node);
-                Bag out = graph.getEdgesOut(node);
-                SiteEdge inEdge = (SiteEdge) in.get(0);
-                vegfMap.remove(sites.graphFactory.getOppositeDirection(inEdge, DEFAULT_EDGE_LEVEL));
-
-                SiteEdge outEdge = (SiteEdge) out.get(0);
-                vegfMap.remove(sites.graphFactory.getDirection(outEdge, DEFAULT_EDGE_LEVEL));
-
-                if (vegfMap.isEmpty()) {
-                    continue;
-                }
-
+            Boolean validSproutDir = setSproutDirection(random, node);
+            if (validSproutDir) {
                 angiogenicNodeMap.put(node, new ArrayList<>());
-
-                EnumMap<EdgeDirection, Double> vegfAverages = getDirectionalAverages(vegfMap);
-
-                node.sproutDir = performWalk(random, node, vegfAverages);
             }
         }
 
-        boolean addFlag = propogateEdges();
+        boolean addFlag = propogateEdges(random);
         if (addFlag) {
             for (SiteNode sproutNode : angiogenicNodeMap.keySet()) {
                 if (keyNodesToRemove.contains(sproutNode)) {
@@ -414,6 +400,31 @@ public class PatchComponentGrowth implements Component {
         keyNodesToRemove.clear();
     }
 
+    private boolean setSproutDirection(MersenneTwisterFast random, SiteNode node) {
+        EnumMap<EdgeDirection, ArrayList<Double>> vegfMap =
+                buildDirectionalSpanMap(vegfLattice, node);
+
+        if (averageDirectionalMap(vegfMap) > vegfThreshold) {
+            Bag in = graph.getEdgesIn(node);
+            Bag out = graph.getEdgesOut(node);
+            SiteEdge inEdge = (SiteEdge) in.get(0);
+            vegfMap.remove(sites.graphFactory.getOppositeDirection(inEdge, DEFAULT_EDGE_LEVEL));
+
+            SiteEdge outEdge = (SiteEdge) out.get(0);
+            vegfMap.remove(sites.graphFactory.getDirection(outEdge, DEFAULT_EDGE_LEVEL));
+
+            if (vegfMap.isEmpty()) {
+                return false;
+            }
+
+            EnumMap<EdgeDirection, Double> vegfAverages = getDirectionalAverages(vegfMap);
+
+            node.sproutDir = performWalk(random, node, vegfAverages);
+            return true;
+        }
+        return false;
+    }
+
     private SiteNode validateNodeObject(SiteNode node) {
         // Connecting sprout to existing node
         if (node.pressure == 0.0) {
@@ -441,7 +452,7 @@ public class PatchComponentGrowth implements Component {
      *
      * @return {@code true} if an angiogenic edge becomes perfused, {@code false} otherwise
      */
-    private boolean propogateEdges() {
+    private boolean propogateEdges(MersenneTwisterFast random) {
         boolean addFlag = false;
         addTemporaryEdges();
 
@@ -454,20 +465,29 @@ public class PatchComponentGrowth implements Component {
             ArrayList<SiteEdge> edgeList = angiogenicNodeMap.get(sprout);
             SiteNode tipNode;
             SiteEdge newEdge;
+            Boolean validSproutDir = false;
 
             if (!edgeList.isEmpty()) {
                 tipNode = edgeList.get(edgeList.size() - 1).getTo();
+                validSproutDir = setSproutDirection(random, tipNode);
             } else {
                 tipNode = sprout;
+                validSproutDir = true;
             }
 
             if (tick - tipNode.lastUpdate < migrationRate) {
                 continue;
             }
 
-            newEdge = createNewEdge(sprout.sproutDir, tipNode);
+            if (validSproutDir) {
+                newEdge = createNewEdge(tipNode.sproutDir, tipNode);
+            } else {
+                continue;
+            }
 
-            if (edgeList.size() == maxEdges || newEdge == null) {
+            if (edgeList.size() == maxEdges
+                    || newEdge == null
+                    || tick - tipNode.lastUpdate > sproutLife) {
                 keyNodesToRemove.add(sprout);
             } else {
                 edgeList.add(newEdge);
